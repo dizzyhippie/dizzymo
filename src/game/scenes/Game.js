@@ -1,24 +1,41 @@
 import { EventBus } from "../EventBus";
 import { Scene } from "phaser";
 
-var platforms, player, cursors, moustaches, scoreText, bombs;
-var score = 0;
-
 export class Game extends Scene {
     constructor() {
         super("Game");
+        this.platforms = null;
+        this.player = null;
+        this.cursors = null;
+        this.moustaches = null;
+        this.scoreText = null;
+        this.bombs = null;
+        this.score = 0;
+        this.WASD = null;
     }
 
     create() {
-        this.createBackground();
+        this.bombs = this.physics.add.group();
+        this.add.image(512, 384, "background").setScale(3);
+        this.platforms = this.physics.add.staticGroup();
         this.createPlatforms();
-        this.createPlayer();
-        this.createScoreText();
-        this.createCursors();
-        this.createMoustaches();
-        this.createBombs();
-        this.createColliders();
-        this.createAnimations();
+
+        this.player = this.createPlayer();
+        this.scoreText = this.createScoreText();
+
+        this.cursors = this.input.keyboard.createCursorKeys();
+        this.WASD = this.input.keyboard.addKeys({
+            up: Phaser.Input.Keyboard.KeyCodes.W,
+            left: Phaser.Input.Keyboard.KeyCodes.A,
+            down: Phaser.Input.Keyboard.KeyCodes.S,
+            right: Phaser.Input.Keyboard.KeyCodes.D,
+            jump: Phaser.Input.Keyboard.KeyCodes.SPACE
+        });
+
+        this.moustaches = this.createMoustaches();
+
+        this.addColliders();
+        this.addAnimations();
 
         EventBus.emit("current-scene-ready", this);
     }
@@ -27,68 +44,53 @@ export class Game extends Scene {
         this.handlePlayerMovement();
     }
 
-    createBackground() {
-        this.add.image(512, 384, "background").setScale(3);
-    }
-
     createPlatforms() {
-        platforms = this.physics.add.staticGroup();
-        platforms.create(400, 568, "ground").setScale(2).refreshBody();
-        platforms.create(600, 400, "ground");
-        platforms.create(50, 250, "ground");
-        platforms.create(750, 220, "ground");
+        this.platforms.create(400, 568, "ground").setScale(2).refreshBody();
+        this.platforms.create(600, 400, "ground");
+        this.platforms.create(50, 250, "ground");
+        this.platforms.create(750, 220, "ground");
     }
 
     createPlayer() {
-        player = this.physics.add.sprite(100, 450, "dude");
+        const player = this.physics.add.sprite(100, 450, "dude");
         player.setBounce(0.2);
         player.setCollideWorldBounds(true);
         player.body.setGravityY(50);
+        return player;
     }
 
     createScoreText() {
-        scoreText = this.add.text(16, 16, "Score: 0", {
+        return this.add.text(16, 16, "Score: 0", {
             fontSize: "32px",
             fill: "#000",
         });
     }
 
-    createCursors() {
-        cursors = this.input.keyboard.createCursorKeys();
-        this.wasd = this.input.keyboard.addKeys({
-            up: Phaser.Input.Keyboard.KeyCodes.W,
-            left: Phaser.Input.Keyboard.KeyCodes.A,
-            down: Phaser.Input.Keyboard.KeyCodes.S,
-            right: Phaser.Input.Keyboard.KeyCodes.D,
-            jump: Phaser.Input.Keyboard.KeyCodes.SPACE
-        });
-    }
-
     createMoustaches() {
-        moustaches = this.physics.add.group({
+        const moustaches = this.physics.add.group({
             key: "moustache",
             repeat: 11,
-            setXY: { x: 12, y: 0, stepX: 70 },
+            setXY: { x: 12, y: 0, stepX: 70 }
         });
 
         moustaches.children.iterate(child => {
             child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
+            child.setScale(5);
         });
+
+        return moustaches;
     }
 
-    createBombs() {
-        bombs = this.physics.add.group();
+    addColliders() {
+        this.physics.add.collider(this.player, this.platforms);
+        this.physics.add.collider(this.moustaches, this.platforms);
+        this.physics.add.overlap(this.player, this.moustaches, this.collectMoustache, null, this);
+
+        this.physics.add.collider(this.bombs, this.platforms);
+        this.physics.add.collider(this.player, this.bombs, this.hitBomb, null, this);
     }
 
-    createColliders() {
-        this.physics.add.collider(player, platforms);
-        this.physics.add.collider(moustaches, platforms);
-        this.physics.add.collider(bombs, platforms);
-        this.physics.add.collider(player, bombs, this.hitBomb, null, this);
-        this.physics.add.overlap(player, moustaches, this.collectMoustache, null, this);
-    }
-
-    createAnimations() {
+    addAnimations() {
         this.anims.create({
             key: "left",
             frames: this.anims.generateFrameNumbers("dude", { start: 0, end: 3 }),
@@ -111,23 +113,28 @@ export class Game extends Scene {
     }
 
     handlePlayerMovement() {
-        const isLeftDown = cursors.left.isDown || this.wasd.left.isDown;
-        const isRightDown = cursors.right.isDown || this.wasd.right.isDown;
-        const isUpDown = cursors.up.isDown || this.wasd.up.isDown || this.wasd.jump.isDown;
+        const isLeftPressed = this.cursors.left.isDown || this.WASD.left.isDown;
+        const isRightPressed = this.cursors.right.isDown || this.WASD.right.isDown;
+        const isJumpPressed = this.cursors.up.isDown || this.WASD.up.isDown || this.WASD.jump.isDown;
+        const isDownPressed = this.cursors.down.isDown || this.WASD.down.isDown;
 
-        if (isLeftDown) {
-            player.setVelocityX(-160);
-            player.anims.play("left", true);
-        } else if (isRightDown) {
-            player.setVelocityX(160);
-            player.anims.play("right", true);
+        if (isLeftPressed) {
+            this.player.setVelocityX(-160);
+            this.player.anims.play("left", true);
+        } else if (isRightPressed) {
+            this.player.setVelocityX(160);
+            this.player.anims.play("right", true);
         } else {
-            player.setVelocityX(0);
-            player.anims.play("turn");
+            this.player.setVelocityX(0);
+            this.player.anims.play("turn");
         }
 
-        if (isUpDown && player.body.touching.down) {
-            player.setVelocityY(-330);
+        if (isJumpPressed && this.player.body.touching.down) {
+            this.player.setVelocityY(-330);
+        }
+
+        if (isDownPressed && !this.player.body.touching.down) {
+            this.player.setVelocityY(330);
         }
     }
 
@@ -140,16 +147,19 @@ export class Game extends Scene {
 
     collectMoustache(player, moustache) {
         moustache.disableBody(true, true);
-        score += 50;
-        scoreText.setText("Score: " + score);
+        this.score += 50;
+        this.scoreText.setText("Score: " + this.score);
 
-        if (moustaches.countActive(true) === 0) {
-            moustaches.children.iterate(child => {
+        if (this.moustaches.countActive(true) === 0) {
+            this.moustaches.children.iterate(child => {
                 child.enableBody(true, child.x, 0, true, true);
             });
 
-            const x = player.x < 400 ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
-            const bomb = bombs.create(x, 16, "bomb");
+            const x = player.x < 400
+                ? Phaser.Math.Between(400, 800)
+                : Phaser.Math.Between(0, 400);
+
+            const bomb = this.bombs.create(x, 16, "bomb");
             bomb.setBounce(1);
             bomb.setCollideWorldBounds(true);
             bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
