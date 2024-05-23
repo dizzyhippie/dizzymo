@@ -1,7 +1,9 @@
 import { EventBus } from "../EventBus";
 import { Scene } from "phaser";
 
-var platforms, player, cursors, stars, moustache;
+var platforms, player, cursors, moustaches, scoreText, bombs;
+
+var score = 0;
 
 export class Game extends Scene {
     constructor() {
@@ -9,6 +11,7 @@ export class Game extends Scene {
     }
 
     create() {
+        bombs = this.physics.add.group();
         this.add.image(512, 384, "background").setScale(3);
         platforms = this.physics.add.staticGroup();
         platforms.create(400, 568, "ground").setScale(2).refreshBody();
@@ -21,21 +24,37 @@ export class Game extends Scene {
         player.setCollideWorldBounds(true);
         player.body.setGravityY(50);
 
+        scoreText = this.add.text(16, 16, "Score: 0", {
+            fontSize: "32px",
+            fill: "#000",
+        });
+
         cursors = this.input.keyboard.createCursorKeys();
 
-        moustache = this.physics.add.group({
+        moustaches = this.physics.add.group({
             key: "moustache",
             repeat: 11,
             setXY: { x: 12, y: 0, stepX: 70 },
         });
 
-        moustache.children.iterate(function (child) {
+        moustaches.children.iterate(function (child) {
             child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
         });
 
         this.physics.add.collider(player, platforms);
-        this.physics.add.collider(moustache, platforms);
-        this.physics.add.overlap(player, moustache, collectMoustache, null, this);
+        this.physics.add.collider(moustaches, platforms);
+        this.physics.add.overlap(
+            player,
+            moustaches,
+            collectMoustache,
+            null,
+            this
+        );
+
+            
+        this.physics.add.collider(bombs, platforms);
+        this.physics.add.collider(player, bombs, hitBomb, null, this);
+
 
         this.anims.create({
             key: "left",
@@ -63,8 +82,36 @@ export class Game extends Scene {
             repeat: -1,
         });
 
+        function hitBomb(player, bomb) {
+            this.physics.pause();
+
+            player.setTint(0xff0000);
+
+            player.anims.play("turn");
+
+            gameOver = true;
+        }
+
         function collectMoustache(player, moustache) {
             moustache.disableBody(true, true);
+            score += 50;
+            scoreText.setText("Score: " + score);
+
+            if (moustaches.countActive(true) === 0) {
+                moustaches.children.iterate(function (child) {
+                    child.enableBody(true, child.x, 0, true, true);
+                });
+
+                var x =
+                    player.x < 400
+                        ? Phaser.Math.Between(400, 800)
+                        : Phaser.Math.Between(0, 400);
+
+                var bomb = bombs.create(x, 16, "bomb");
+                bomb.setBounce(1);
+                bomb.setCollideWorldBounds(true);
+                bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
+            }
         }
 
         EventBus.emit("current-scene-ready", this);
