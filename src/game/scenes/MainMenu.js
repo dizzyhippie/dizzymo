@@ -21,6 +21,13 @@ export class MainMenu extends Scene {
         ];
 
         menuItems.forEach(item => this.createMenuItem(item));
+        
+        if (!this.sound.get('backgroundMusic')) {
+            const music = this.sound.add('backgroundMusic', { loop: true });
+            music.play();
+            music.setVolume(0.25);
+        }
+
         EventBus.emit('current-scene-ready', this);
     }
 
