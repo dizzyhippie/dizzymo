@@ -1,7 +1,7 @@
 import { EventBus } from "../EventBus";
 import { Scene } from "phaser";
 
-var platforms, player, cursors, stars;
+var platforms, player, cursors, stars, moustache;
 
 export class Game extends Scene {
     constructor() {
@@ -23,19 +23,19 @@ export class Game extends Scene {
 
         cursors = this.input.keyboard.createCursorKeys();
 
-        stars = this.physics.add.group({
-            key: "star",
+        moustache = this.physics.add.group({
+            key: "moustache",
             repeat: 11,
             setXY: { x: 12, y: 0, stepX: 70 },
         });
 
-        stars.children.iterate(function (child) {
+        moustache.children.iterate(function (child) {
             child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
         });
 
         this.physics.add.collider(player, platforms);
-        this.physics.add.collider(stars, platforms);
-        this.physics.add.overlap(player, stars, collectStar, null, this);
+        this.physics.add.collider(moustache, platforms);
+        this.physics.add.overlap(player, moustache, collectMoustache, null, this);
 
         this.anims.create({
             key: "left",
@@ -63,8 +63,8 @@ export class Game extends Scene {
             repeat: -1,
         });
 
-        function collectStar(player, star) {
-            star.disableBody(true, true);
+        function collectMoustache(player, moustache) {
+            moustache.disableBody(true, true);
         }
 
         EventBus.emit("current-scene-ready", this);
