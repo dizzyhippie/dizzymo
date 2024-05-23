@@ -20,6 +20,12 @@ body {
     font-size: 0.8em;
 }
 
+.title {
+    font-family: "droog", sans-serif;
+    font-weight: 900;
+    font-style: normal;
+}
+
 .button {
     width: 140px;
     margin: 10px;
