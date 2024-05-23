@@ -1,16 +1,13 @@
 import { EventBus } from '../EventBus';
 import { Scene } from 'phaser';
 
-export class MainMenu extends Scene
-{
+export class MainMenu extends Scene {
     
-    constructor ()
-    {
+    constructor () {
         super('MainMenu');
     }
 
-    create ()
-    {
+    create () {
         this.add.image(512, 384, 'scene-background');
         this.add.text(512, 300, 'Adventures of DizzyMo', {
             fontFamily: 'droog', fontSize: 38, color: '#ffffff',
@@ -18,17 +15,29 @@ export class MainMenu extends Scene
             align: 'center'
         }).setDepth(100).setOrigin(0.5);
         
+        const menuItems = [
+            { text: 'Start Game', scene: 'Game', y: 400 },
+            { text: 'Settings', scene: 'Settings', y: 435 }
+        ];
+
+        menuItems.forEach(item => this.createMenuItem(item));
         EventBus.emit('current-scene-ready', this);
     }
 
-    changeScene ()
-    {
-        if (this.logoTween)
-        {
-            this.logoTween.stop();
-            this.logoTween = null;
-        }
+    createMenuItem({ text, scene, y }) {
+        const menuItem = this.add.text(512, y, text, {
+            fontFamily: 'droog', fontSize: 24, color: '#ffffff',
+            stroke: '#000000',
+            align: 'center'
+        }).setDepth(100).setOrigin(0.5);
 
-        this.scene.start('Game');
+        menuItem.setInteractive();
+        menuItem.on('pointerdown', () => {
+            this.changeScene(scene);
+        });
+    }
+
+    changeScene(scene) {
+        this.scene.start(scene);
     }
 }
