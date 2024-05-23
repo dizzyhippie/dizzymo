@@ -89,7 +89,7 @@ export class Game extends Scene {
 
             player.anims.play("turn");
 
-            gameOver = true;
+            this.scene.start("GameOver");
         }
 
         function collectMoustache(player, moustache) {
