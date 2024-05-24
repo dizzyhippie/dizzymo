@@ -18,7 +18,7 @@ export class Boot extends Scene
         this.load.image('background', 'assets/bg.jpg');
         this.load.image('moustache', 'assets/dizzy-moustache.png');
         this.load.image('bomb', 'assets/bomb.png');
-        this.load.audio('backgroundMusic', 'assets/music/menu.wav');
+        this.load.audio('backgroundMusic', 'assets/music/menu-2.mp3');
         this.load.spritesheet('dude', 'assets/dude.png', { frameWidth: 32, frameHeight: 48 });
     }
 

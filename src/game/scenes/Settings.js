@@ -9,7 +9,7 @@ export class Settings extends Scene {
 
     create() {
         this.add.image(512, 384, 'main-menu-background');
-        this.add.text(512, 300, 'Adventures of DizzyMo', {
+        this.add.text(512, 225, 'Adventures of DizzyMo', {
             fontFamily: 'droog', fontSize: 38, color: '#ffffff',
             stroke: '#000000',
             align: 'center'
@@ -17,17 +17,10 @@ export class Settings extends Scene {
 
         const menuItems = [
             { text: 'Toggle Music', action: this.toggleMusic, y: 400 },
-            { text: 'Back to Game', scene: 'MainMenu', y: 435 }
+            { text: 'Back to Game', scene: 'MainMenu', y: 500 }
         ];
 
         menuItems.forEach(item => this.createMenuItem(item));
-
-        if (!this.sound.get('backgroundMusic')) {
-            const music = this.sound.add('backgroundMusic', { loop: true });
-            music.play();
-            music.setVolume(0.05);
-        }
-
         EventBus.emit('current-scene-ready', this);
     }
 
