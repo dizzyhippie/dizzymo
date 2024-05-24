@@ -53,9 +53,9 @@ export class Game extends Scene {
 
     createPlayer() {
         const player = this.physics.add.sprite(100, 450, "dude");
-        player.setBounce(0.2);
+        player.setBounce(0.01);
         player.setCollideWorldBounds(true);
-        player.body.setGravityY(50);
+        player.body.setGravityY(1000);
         return player;
     }
 
@@ -85,7 +85,6 @@ export class Game extends Scene {
         this.physics.add.collider(this.player, this.platforms);
         this.physics.add.collider(this.moustaches, this.platforms);
         this.physics.add.overlap(this.player, this.moustaches, this.collectMoustache, null, this);
-
         this.physics.add.collider(this.bombs, this.platforms);
         this.physics.add.collider(this.player, this.bombs, this.hitBomb, null, this);
     }
@@ -119,10 +118,10 @@ export class Game extends Scene {
         const isDownPressed = this.cursors.down.isDown || this.WASD.down.isDown;
 
         if (isLeftPressed) {
-            this.player.setVelocityX(-160);
+            this.player.setVelocityX(-350);
             this.player.anims.play("left", true);
         } else if (isRightPressed) {
-            this.player.setVelocityX(160);
+            this.player.setVelocityX(350);
             this.player.anims.play("right", true);
         } else {
             this.player.setVelocityX(0);
@@ -130,11 +129,11 @@ export class Game extends Scene {
         }
 
         if (isJumpPressed && this.player.body.touching.down) {
-            this.player.setVelocityY(-330);
+            this.player.setVelocityY(-700);
         }
 
         if (isDownPressed && !this.player.body.touching.down) {
-            this.player.setVelocityY(330);
+            this.player.setVelocityY(700);
         }
     }
 
