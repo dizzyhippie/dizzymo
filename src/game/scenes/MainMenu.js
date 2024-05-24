@@ -8,7 +8,7 @@ export class MainMenu extends Scene {
     }
 
     create () {
-        this.add.image(512, 384, 'scene-background');
+        this.add.image(512, 384, 'main-menu-background');
         this.add.text(512, 300, 'Adventures of DizzyMo', {
             fontFamily: 'droog', fontSize: 38, color: '#ffffff',
             stroke: '#000000',
@@ -25,7 +25,7 @@ export class MainMenu extends Scene {
         if (!this.sound.get('backgroundMusic')) {
             const music = this.sound.add('backgroundMusic', { loop: true });
             music.play();
-            music.setVolume(0.25);
+            music.setVolume(0.05);
         }
 
         EventBus.emit('current-scene-ready', this);
